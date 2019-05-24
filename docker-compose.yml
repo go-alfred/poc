@@ -1,0 +1,43 @@
+version: '3'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    networks:
+      - backend
+
+  botkit:
+    image: go.alfred
+    ports:
+      - "3000:3000"
+    build: .
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+  db:
+    image: mongo:3.7-xenial
+    networks:
+      - backend
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  mongo-data:
